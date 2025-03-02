@@ -1,0 +1,17 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Bank root entity'
+@Metadata.ignorePropagatedAnnotations: true
+define root view entity z_i_bank
+  as select from I_Bank_2 
+{
+  key BankCountry,
+  key BankInternalID,
+      BankName,
+      BankBranch,
+      SWIFTCode,
+      BankNetworkGrouping,
+      IsMarkedForDeletion,
+      BankCategory,
+      Bank
+          
+}
