@@ -1,0 +1,13 @@
+unmanaged implementation in class zbp_i_bank unique;
+strict ( 2 );
+
+define behavior for z_i_bank
+lock master
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+  field ( mandatory : create, readonly : update ) BankCountry, BankInternalID;
+  field ( readonly ) BankNetworkGrouping, IsMarkedForDeletion, Bank, BankCategory;
+}
