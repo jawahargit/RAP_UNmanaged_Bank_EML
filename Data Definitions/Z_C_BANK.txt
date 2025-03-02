@@ -1,0 +1,18 @@
+@EndUserText.label: 'Projection / Consumption Entity'
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@Metadata.ignorePropagatedAnnotations: true
+@Metadata.allowExtensions: true
+define root view entity Z_C_BANK
+  provider contract transactional_query
+  as projection on z_i_bank
+{
+  key BankCountry,
+  key BankInternalID,
+      BankName,
+      BankBranch,
+      SWIFTCode,
+      BankNetworkGrouping,
+      IsMarkedForDeletion,
+      BankCategory,
+      Bank
+}
