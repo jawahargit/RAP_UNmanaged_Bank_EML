@@ -1,0 +1,161 @@
+#Global Class
+
+CLASS zbp_i_bank DEFINITION PUBLIC ABSTRACT FINAL FOR BEHAVIOR OF z_i_bank.
+ENDCLASS.
+
+CLASS zbp_i_bank IMPLEMENTATION.
+ENDCLASS.
+
+
+
+#Local Types Class
+
+CLASS lhc_z_i_bank DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR z_i_bank RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE z_i_bank.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE z_i_bank.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE z_i_bank.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ z_i_bank RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK z_i_bank.
+
+ENDCLASS.
+
+CLASS lhc_z_i_bank IMPLEMENTATION.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD create.
+* get new record data from the transaction buffer
+    DATA(ls_bank) = entities[ 1 ].
+
+    DATA create_bank TYPE STRUCTURE FOR CREATE i_banktp.
+
+    create_bank = VALUE #( bankcountry          = ls_bank-BankCountry
+                           bankinternalid       = ls_bank-BankInternalID
+                           longbankname         = ls_bank-BankName
+                           longbankbranch       = ls_bank-BankBranch
+                           banknumber           = ls_bank-bank
+                           bankcategory = ''
+                           banknetworkgrouping  = ls_bank-BankNetworkGrouping
+                         ).
+
+* Create a new bank record
+    MODIFY ENTITIES OF i_banktp PRIVILEGED
+        ENTITY bank
+        CREATE FIELDS ( bankcountry
+                        bankinternalid
+                        longbankname
+                        longbankbranch
+                        banknumber
+                        bankcategory
+                        banknetworkgrouping
+                      )
+        WITH VALUE #( (
+            %cid = 'cid1'
+            bankcountry         = create_bank-bankcountry
+            bankinternalid      = create_bank-bankinternalid
+            longbankname        = create_bank-longbankname
+            longbankbranch      = create_bank-longbankbranch
+            banknumber          = create_bank-banknumber
+            bankcategory        = create_bank-bankcategory
+            banknetworkgrouping = create_bank-banknetworkgrouping
+            )  )
+       MAPPED DATA(mapped_bank) REPORTED DATA(reported_bank) FAILED DATA(failed_bank).
+
+  ENDMETHOD.
+
+  METHOD update.
+
+* Changed record from transaction buffer
+    DATA(ls_bank) = entities[ 1 ].
+
+* Fetch existing data
+    SELECT SINGLE * FROM z_i_bank
+        WHERE BankCountry = @ls_bank-BankCountry
+          AND BankInternalID = @ls_bank-BankInternalID
+        INTO @DATA(ls_existing_bank).
+
+* Update the bank data
+    MODIFY ENTITIES OF i_banktp PRIVILEGED ENTITY bank
+     UPDATE FIELDS (
+                     longbankname
+                     longbankbranch
+                     SWIFTCode
+                   )
+     WITH VALUE #( (
+         %key-bankcountry    = ls_bank-BankCountry
+         %key-bankinternalid = ls_bank-BankInternalID
+         longbankname        = COND #( WHEN ls_bank-BankName IS INITIAL
+                                       THEN ls_existing_bank-BankName ELSE ls_bank-BankName )
+         longbankbranch      = COND #( WHEN ls_bank-BankBranch IS INITIAL
+                                       THEN ls_existing_bank-BankBranch ELSE ls_bank-BankBranch )
+         SWIFTCode           = COND #( WHEN ls_bank-SWIFTCode IS INITIAL
+                                       THEN ls_existing_bank-SWIFTCode ELSE ls_bank-SWIFTCode )
+                 ) )
+      FAILED DATA(failed_bank) REPORTED DATA(reported_bank) MAPPED DATA(updated_mapped).
+  ENDMETHOD.
+
+  METHOD delete.
+    APPEND VALUE #( %tky = keys[ 1 ]-%tky ) TO failed-z_i_bank.
+    APPEND VALUE #( %tky = keys[ 1 ]-%tky
+                    %msg = new_message_with_text( severity = if_abap_behv_message=>severity-error
+                                                  text = 'Delete functionality is not enabled' )
+                   ) TO reported-z_i_bank.
+
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD lock.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_Z_I_BANK DEFINITION INHERITING FROM cl_abap_behavior_saver.
+  PROTECTED SECTION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_Z_I_BANK IMPLEMENTATION.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+  ENDMETHOD.
+
+  METHOD save.
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.
